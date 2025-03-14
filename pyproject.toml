@@ -5,8 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "contextily>=1.6.2",
     "fastparquet>=2024.11.0",
+    "folium>=0.19.5",
+    "geopandas>=1.0.1",
+    "h3>=4.2.2",
     "jupyter>=1.1.1",
+    "matplotlib>=3.10.1",
     "notebook>=7.3.2",
+    "pyarrow>=19.0.1",
     "pyspark>=3.5.4",
+    "seaborn>=0.13.2",
+    "tqdm>=4.67.1",
 ]
