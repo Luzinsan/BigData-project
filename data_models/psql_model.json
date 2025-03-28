@@ -485,8 +485,7 @@
           "length": 16,
           "childRelationships": [
             "e6a20d96-a3d4-446c-912f-9e3774b13b73",
-            "77fa6d31-15b3-4ab1-9518-4812ce7b4b24",
-            "098eb665-b9dc-42ea-a30c-dceac1fcb3d3"
+            "77fa6d31-15b3-4ab1-9518-4812ce7b4b24"
           ],
           "error": {}
         },
@@ -515,6 +514,54 @@
             "other"
           ],
           "error": {}
+        },
+        {
+          "name": "lat",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": false,
+          "GUID": "6dda0ee1-6d15-47b0-949f-806de6813a04",
+          "error": {}
+        },
+        {
+          "name": "lon",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": false,
+          "GUID": "48820278-12b0-4f20-82a9-658f639eda56",
+          "error": {}
         }
       ],
       "definitions": {
@@ -530,78 +577,6 @@
       "table_tablespace_name": "pg_default",
       "bucketId": "dbba7d74-566e-4fc4-83cd-42195c8416a2",
       "code": "locations"
-    },
-    {
-      "GUID": "8f4d4cd9-38e0-4adb-8379-05e18cabfddc",
-      "collectionName": "Moscow locations",
-      "type": "object",
-      "properties": [
-        {
-          "name": "h3_09",
-          "hackoladeMeta": {},
-          "isActivated": true,
-          "primaryKey": false,
-          "unique": false,
-          "mode": "varchar",
-          "required": false,
-          "childType": "char",
-          "type": "string",
-          "compositeKey": [
-            "compositePartitionKey",
-            "compositePrimaryKey",
-            "compositeUniqueKey",
-            "triggerUpdateColumns"
-          ],
-          "compositePartitionKey": false,
-          "triggerUpdateColumns": false,
-          "GUID": "1e4643df-6910-422e-abbf-1a87fe93cb94",
-          "length": 16,
-          "error": {},
-          "relationshipType": "Foreign Key",
-          "foreignCollection": "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
-          "foreignField": [
-            "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
-            "95d12564-c872-43f7-9867-0cdf6e880f92"
-          ],
-          "parentRelationship": "098eb665-b9dc-42ea-a30c-dceac1fcb3d3"
-        },
-        {
-          "hackoladeMeta": {},
-          "isActivated": true,
-          "primaryKey": true,
-          "mode": "varchar",
-          "required": true,
-          "childType": "char",
-          "type": "string",
-          "compositeKey": [
-            "compositePartitionKey",
-            "compositePrimaryKey",
-            "compositeUniqueKey",
-            "triggerUpdateColumns"
-          ],
-          "compositePartitionKey": false,
-          "triggerUpdateColumns": false,
-          "GUID": "f96a1bc7-c262-47d1-94da-95a1a3b13579",
-          "name": "Precise location",
-          "code": "precise_location",
-          "length": 16,
-          "error": {}
-        }
-      ],
-      "definitions": {
-        "type": "definitions",
-        "properties": [],
-        "GUID": "ee994961-7cb8-4242-bdc7-606508482225"
-      },
-      "isActivated": true,
-      "additionalProperties": false,
-      "memory_optimized": false,
-      "collectionUsers": [],
-      "ifNotExist": true,
-      "table_tablespace_name": "pg_default",
-      "bucketId": "dbba7d74-566e-4fc4-83cd-42195c8416a2",
-      "hackoladeMeta": {},
-      "code": "moscow"
     }
   ],
   "buckets": [
@@ -611,8 +586,7 @@
       "collectionIds": [
         "e92fd140-523c-4d9b-b036-1039bb7e0dba",
         "ee00d8af-a003-4bc1-b7f0-dff23090d847",
-        "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
-        "8f4d4cd9-38e0-4adb-8379-05e18cabfddc"
+        "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7"
       ],
       "backgroundColor": {
         "r": 216,
@@ -658,25 +632,25 @@
         "dataType": "",
         "shape": [
           {
-            "x": 1886.5,
-            "y": 1187
+            "x": 2038,
+            "y": 1225
           },
           {
-            "x": 1886.5,
-            "y": 1147
+            "x": 2063,
+            "y": 1225
           },
           {
-            "x": 1769.6666666666667,
-            "y": 1147
+            "x": 2063,
+            "y": 1073
           },
           {
-            "x": 1769.6666666666667,
-            "y": 1107
+            "x": 1863,
+            "y": 1073
           }
         ],
         "sides": [
-          "top",
-          "bottom"
+          "right",
+          "right"
         ]
       }
     },
@@ -710,76 +684,24 @@
         "dataType": "",
         "shape": [
           {
-            "x": 1459.5,
-            "y": 1177
+            "x": 1657,
+            "y": 1301
           },
           {
-            "x": 1459.5,
-            "y": 1142
+            "x": 1888,
+            "y": 1301
           },
           {
-            "x": 1676.3333333333333,
-            "y": 1142
-          },
-          {
-            "x": 1676.3333333333333,
-            "y": 1107
-          }
-        ],
-        "sides": [
-          "top",
-          "bottom"
-        ]
-      }
-    },
-    {
-      "name": "fk_locations_h3_09_to_moscow_h3_09",
-      "relationshipType": "Foreign Key",
-      "parentField": [
-        [
-          "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
-          "95d12564-c872-43f7-9867-0cdf6e880f92"
-        ]
-      ],
-      "parentCardinality": "1",
-      "childField": [
-        [
-          "8f4d4cd9-38e0-4adb-8379-05e18cabfddc",
-          "1e4643df-6910-422e-abbf-1a87fe93cb94"
-        ]
-      ],
-      "isActivated": true,
-      "childCardinality": "0..n",
-      "parentCollection": "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
-      "childCollection": "8f4d4cd9-38e0-4adb-8379-05e18cabfddc",
-      "GUID": "098eb665-b9dc-42ea-a30c-dceac1fcb3d3",
-      "hackoladeStyles": {
-        "GUID": "3369ebb1-8513-4c18-9a53-6af0cc19663d",
-        "autoPositioning": true,
-        "type": "Orthogonal",
-        "thickness": 2,
-        "color": "#79c4ff",
-        "dataType": "",
-        "shape": [
-          {
-            "x": 1977,
-            "y": 1072.5
-          },
-          {
-            "x": 1920,
-            "y": 1072.5
-          },
-          {
-            "x": 1920,
-            "y": 1072.5
+            "x": 1888,
+            "y": 1108
           },
           {
             "x": 1863,
-            "y": 1072.5
+            "y": 1108
           }
         ],
         "sides": [
-          "left",
+          "right",
           "right"
         ]
       }
@@ -810,10 +732,8 @@
     "3eb3e3f5-d2dc-4077-8b28-13107bd4598c": "Type",
     "e6a20d96-a3d4-446c-912f-9e3774b13b73": "fk_locations_h3_09_to_cash_withdrawals_h3_09",
     "77fa6d31-15b3-4ab1-9518-4812ce7b4b24": "fk_locations_h3_09_to_transactions_h3_09",
-    "8f4d4cd9-38e0-4adb-8379-05e18cabfddc": "Moscow locations",
-    "1e4643df-6910-422e-abbf-1a87fe93cb94": "h3_09",
-    "f96a1bc7-c262-47d1-94da-95a1a3b13579": "Precise location",
-    "098eb665-b9dc-42ea-a30c-dceac1fcb3d3": "fk_locations_h3_09_to_moscow_h3_09"
+    "6dda0ee1-6d15-47b0-949f-806de6813a04": "lat",
+    "48820278-12b0-4f20-82a9-658f639eda56": "lon"
   },
   "definitions": {
     "type": "definitions",
@@ -840,7 +760,7 @@
   "creationTS": "2025-03-15T13:19:07.421Z",
   "GUID": "a8a49f04-3438-413e-afda-868e12bc2696",
   "isLineageEnabled": false,
-  "lastModifTS": "2025-03-15T15:57:46.871Z",
+  "lastModifTS": "2025-03-28T11:52:34.264Z",
   "persistenceSchemaVersion": "8",
   "isCreatedByPlugin": true,
   "pluginInformation": {
@@ -849,8 +769,9 @@
     "pluginEngineVersion": "1.0.0"
   },
   "applicationInformation": {
-    "version": "8.0.5"
+    "version": "8.0.3"
   },
+  "hackoladeMeta": {},
   "settings": {
     "centralPane": {
       "dbLevel": {
@@ -865,8 +786,8 @@
           },
           {
             "GUID": "ee00d8af-a003-4bc1-b7f0-dff23090d847",
-            "x": 1747,
-            "y": 1187,
+            "x": 1759,
+            "y": 1189,
             "width": 279,
             "height": 72,
             "color": {}
@@ -876,15 +797,7 @@
             "x": 1583,
             "y": 1038,
             "width": 280,
-            "height": 69,
-            "color": {}
-          },
-          {
-            "GUID": "8f4d4cd9-38e0-4adb-8379-05e18cabfddc",
-            "x": 1977,
-            "y": 1038,
-            "width": 278,
-            "height": 69,
+            "height": 105,
             "color": {}
           }
         ],
