@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.neighbors import BallTree
 
 
-hexses = pd.read_parquet("src/data/hexses.parquet")
+hexses = pd.read_parquet("src/data/locations.parquet")
 summary_shape = 0
 try:
     path = 'src/data/moscow.parquet'
