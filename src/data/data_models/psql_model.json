@@ -491,15 +491,16 @@
           "error": {}
         },
         {
-          "name": "Type",
+          "name": "lat",
           "hackoladeMeta": {},
           "isActivated": true,
           "primaryKey": false,
           "unique": false,
-          "mode": "varchar",
-          "required": true,
-          "childType": "char",
-          "type": "string",
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
           "compositeKey": [
             "compositePartitionKey",
             "compositePrimaryKey",
@@ -507,13 +508,36 @@
             "triggerUpdateColumns"
           ],
           "compositePartitionKey": false,
+          "compositePrimaryKey": false,
           "triggerUpdateColumns": false,
-          "GUID": "3eb3e3f5-d2dc-4077-8b28-13107bd4598c",
-          "code": "type",
-          "enum": [
-            "ATM",
-            "other"
+          "code": "lat",
+          "required": false,
+          "GUID": "c0f49c15-70a4-4df6-887d-b3710565091e",
+          "error": {}
+        },
+        {
+          "name": "lon",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
           ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "code": "lon",
+          "required": false,
+          "GUID": "f9dbb149-220c-423d-b237-0fa85fe1ba18",
           "error": {}
         }
       ],
@@ -763,15 +787,15 @@
           },
           {
             "x": 1886.5,
-            "y": 1147
+            "y": 1156
           },
           {
             "x": 1769.6666666666667,
-            "y": 1147
+            "y": 1156
           },
           {
             "x": 1769.6666666666667,
-            "y": 1107
+            "y": 1125
           }
         ],
         "sides": [
@@ -815,15 +839,15 @@
           },
           {
             "x": 1459.5,
-            "y": 1142
+            "y": 1151
           },
           {
             "x": 1676.3333333333333,
-            "y": 1142
+            "y": 1151
           },
           {
             "x": 1676.3333333333333,
-            "y": 1107
+            "y": 1125
           }
         ],
         "sides": [
@@ -871,11 +895,11 @@
           },
           {
             "x": 1920,
-            "y": 1072.5
+            "y": 1081.5
           },
           {
             "x": 1863,
-            "y": 1072.5
+            "y": 1081.5
           }
         ],
         "sides": [
@@ -907,7 +931,6 @@
     "5ad312bd-9341-4baa-b5cc-5da660c694c8": "Customer",
     "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7": "Locations",
     "95d12564-c872-43f7-9867-0cdf6e880f92": "H3 index level 9",
-    "3eb3e3f5-d2dc-4077-8b28-13107bd4598c": "Type",
     "e6a20d96-a3d4-446c-912f-9e3774b13b73": "fk_locations_h3_09_to_cash_withdrawals_h3_09",
     "77fa6d31-15b3-4ab1-9518-4812ce7b4b24": "fk_locations_h3_09_to_transactions_h3_09",
     "8f4d4cd9-38e0-4adb-8379-05e18cabfddc": "Moscow locations",
@@ -917,7 +940,9 @@
     "e6865859-b9b9-429f-a363-6636f2fa5d1a": "tags",
     "4e474c1d-faf3-4f8c-9552-6b43d943b154": "lat",
     "c8fcc039-05d5-4b80-b778-6b4bd088fa06": "lon",
-    "95d93f90-da5e-40ea-8cbf-db49950677ef": "h3_09"
+    "95d93f90-da5e-40ea-8cbf-db49950677ef": "h3_09",
+    "c0f49c15-70a4-4df6-887d-b3710565091e": "lat",
+    "f9dbb149-220c-423d-b237-0fa85fe1ba18": "lon"
   },
   "definitions": {
     "type": "definitions",
@@ -944,7 +969,7 @@
   "creationTS": "2025-03-15T13:19:07.421Z",
   "GUID": "a8a49f04-3438-413e-afda-868e12bc2696",
   "isLineageEnabled": false,
-  "lastModifTS": "2025-04-12T13:23:00.685Z",
+  "lastModifTS": "2025-04-12T15:30:02.568Z",
   "persistenceSchemaVersion": "8",
   "isCreatedByPlugin": true,
   "pluginInformation": {
@@ -981,7 +1006,7 @@
             "x": 1583,
             "y": 1038,
             "width": 280,
-            "height": 69,
+            "height": 87,
             "color": {}
           },
           {
