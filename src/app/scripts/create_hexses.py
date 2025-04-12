@@ -13,11 +13,11 @@ def open_lst(path):
         df[['lat', 'lon']] = df['h3_09'].apply(h3.cell_to_latlng).to_list()
     return df
 
-hexses_data = open_lst('./data/hexses_data.lst')
+hexses_data = open_lst('src/data/hexses_data.lst')
 hexses_data.name = 'hexses_data'
 # print("hexses_data shape: ", hexses_data.shape)
 summary_shape = hexses_data.shape[0]
-hexses_target = open_lst('./data/hexses_target.lst')
+hexses_target = open_lst('src/data/hexses_target.lst')
 hexses_target.name = 'hexses_target'
 # print("hexses_target shape: ", hexses_target.shape)
 summary_shape += hexses_target.shape[0]
@@ -26,4 +26,4 @@ summary_shape += hexses_target.shape[0]
 hexses = pd.concat([hexses_data, hexses_target]).drop_duplicates().reset_index(drop=True)
 hexses.name = 'hexses'
 print(hexses.shape[0])
-hexses.to_csv("data\hexses.csv", index=False)
+hexses.to_parquet("src/data/hexses.parquet", index=False)

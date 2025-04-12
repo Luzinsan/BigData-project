@@ -5,10 +5,10 @@ import numpy as np
 from sklearn.neighbors import BallTree
 
 
-hexses = pd.read_csv("data\hexses.csv")
+hexses = pd.read_parquet("src/data/hexses.parquet")
 summary_shape = 0
 try:
-    path = './data/moscow.parquet'
+    path = 'src/data/moscow.parquet'
     best_engine = 'pyarrow'
     moscow = pd.read_parquet(path, engine=best_engine)
     moscow.name = 'moscow'
@@ -27,6 +27,6 @@ try:
     nearest_indices = indices.flatten()  
     moscow['h3_09_centers'] = [unique_h3[i] for i in nearest_indices]
 
-    moscow.to_csv("data\moscow_updated.csv", index=False)
+    moscow.to_parquet("src/data/moscow_updated.parquet", index=False)
 except FileNotFoundError:
     print("Error: File transactions.parquet wasn't found.  Put the proper path.")
