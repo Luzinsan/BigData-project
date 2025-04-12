@@ -26,4 +26,4 @@ summary_shape += hexses_target.shape[0]
 hexses = pd.concat([hexses_data, hexses_target]).drop_duplicates().reset_index(drop=True)
 hexses.name = 'hexses'
 print(hexses.shape[0])
-hexses.to_parquet("src/data/hexses.parquet", index=False)
+hexses.to_parquet("src/data/locations.parquet", index=False)
