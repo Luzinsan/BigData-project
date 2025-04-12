@@ -1,0 +1,857 @@
+{
+  "modelName": "New model",
+  "collections": [
+    {
+      "GUID": "e92fd140-523c-4d9b-b036-1039bb7e0dba",
+      "collectionName": "Transactions",
+      "type": "object",
+      "properties": [
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": true,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "bigserial",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "6fc5729a-3e5f-4af3-91b5-5b1bea63eec1",
+          "generatedColumn": false,
+          "primaryKeyOptions": [],
+          "code": "transaction_pk",
+          "name": "Transaction PK",
+          "error": {}
+        },
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "mode": "varchar",
+          "required": true,
+          "childType": "char",
+          "type": "string",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "GUID": "4feb6f66-d666-456f-b90a-6bb316a2c7a1",
+          "length": 16,
+          "code": "h3_09",
+          "name": "Transaction location",
+          "error": {},
+          "relationshipType": "Foreign Key",
+          "foreignCollection": "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+          "foreignField": [
+            "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+            "95d12564-c872-43f7-9867-0cdf6e880f92"
+          ],
+          "parentRelationship": "77fa6d31-15b3-4ab1-9518-4812ce7b4b24"
+        },
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "bigint",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "ef88cb4e-7902-46f6-a589-686ceee88114",
+          "code": "customer_id",
+          "name": "Customer",
+          "error": {}
+        },
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "mode": "varchar",
+          "required": true,
+          "childType": "char",
+          "type": "string",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "GUID": "38b9b1c2-28e0-4451-a108-950b4393c775",
+          "enum": [
+            "0",
+            "1",
+            "2",
+            "3"
+          ],
+          "code": "datetime_id",
+          "name": "Part of the day",
+          "error": {}
+        },
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "smallint",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "f53139c8-b596-4b59-809a-96025b24a614",
+          "code": "count",
+          "name": "Number of operations",
+          "error": {}
+        },
+        {
+          "name": "Sum of transaction",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "29cc5c9e-a75f-4bb4-a268-65bdfd856a34",
+          "code": "sum",
+          "error": {}
+        },
+        {
+          "name": "Average transaction amount",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "248caa4b-afd2-4824-b80a-59022d490846",
+          "error": {
+            "name": false,
+            "code": false
+          },
+          "code": "avg"
+        },
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "448b3bc0-1eab-48a9-b81e-f22f736a79a9",
+          "code": "min",
+          "name": "Minimum transaction amount",
+          "error": {}
+        },
+        {
+          "name": "Maximum transaction amount",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "5407dab1-2c33-462e-807b-96f0c1b102d3",
+          "error": {
+            "name": false,
+            "code": false
+          },
+          "code": "max"
+        },
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "a8aa7444-d865-446b-a402-ba30790d2212",
+          "code": "std",
+          "name": "Standard deviation of transactions",
+          "error": {}
+        },
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "smallint",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "5245caad-7605-4fb0-8a81-1cabf88dcf5c",
+          "code": "count_distinct",
+          "name": "Number of types of operations performed",
+          "error": {}
+        },
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "int4range",
+          "childType": "range",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": true,
+          "GUID": "8c870db3-7ea8-4a72-9d98-bf9b6cb4e81e",
+          "maximum": 23,
+          "minimum": 0,
+          "code": "mcc_code",
+          "name": "Type of operation",
+          "error": {}
+        }
+      ],
+      "definitions": {
+        "type": "definitions",
+        "properties": [],
+        "GUID": "9b92d46d-b9f6-4389-a6a0-5d8ecf51100e"
+      },
+      "isActivated": true,
+      "additionalProperties": false,
+      "memory_optimized": false,
+      "collectionUsers": [],
+      "ifNotExist": true,
+      "table_tablespace_name": "pg_default",
+      "bucketId": "dbba7d74-566e-4fc4-83cd-42195c8416a2",
+      "Indxs": [
+        {
+          "GUID": "984661ae-a285-40ed-ba0c-6f905e59f4e1",
+          "isActivated": true,
+          "index_method": "btree",
+          "unique": false,
+          "concurrently": false,
+          "ifNotExist": true,
+          "only": true,
+          "index_tablespace_name": "pg_default",
+          "indxName": "idx_transaction",
+          "columns": [
+            {
+              "keyId": "ef88cb4e-7902-46f6-a589-686ceee88114",
+              "sortOrder": "ASC"
+            },
+            {
+              "keyId": "4feb6f66-d666-456f-b90a-6bb316a2c7a1",
+              "sortOrder": "ASC"
+            },
+            {
+              "keyId": "38b9b1c2-28e0-4451-a108-950b4393c775",
+              "sortOrder": "ASC"
+            }
+          ]
+        }
+      ],
+      "code": "transactions"
+    },
+    {
+      "GUID": "ee00d8af-a003-4bc1-b7f0-dff23090d847",
+      "collectionName": "Cash withdrawals",
+      "type": "object",
+      "properties": [
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": true,
+          "unique": false,
+          "mode": "varchar",
+          "required": true,
+          "childType": "char",
+          "type": "string",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "triggerUpdateColumns": false,
+          "GUID": "0010c9f8-06be-4398-9763-36a6bc107769",
+          "code": "h3_09",
+          "name": "ATM location",
+          "compositePrimaryKey": true,
+          "length": 16,
+          "error": {},
+          "relationshipType": "Foreign Key",
+          "foreignCollection": "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+          "foreignField": [
+            "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+            "95d12564-c872-43f7-9867-0cdf6e880f92"
+          ],
+          "parentRelationship": "e6a20d96-a3d4-446c-912f-9e3774b13b73"
+        },
+        {
+          "name": "Customer",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": true,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "bigint",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": true,
+          "triggerUpdateColumns": false,
+          "code": "customer_id",
+          "required": true,
+          "GUID": "5ad312bd-9341-4baa-b5cc-5da660c694c8",
+          "error": {}
+        }
+      ],
+      "definitions": {
+        "type": "definitions",
+        "properties": [],
+        "GUID": "b227d043-a37e-42dc-921e-ad4050e09c92"
+      },
+      "isActivated": true,
+      "additionalProperties": false,
+      "memory_optimized": false,
+      "collectionUsers": [],
+      "ifNotExist": true,
+      "table_tablespace_name": "pg_default",
+      "bucketId": "dbba7d74-566e-4fc4-83cd-42195c8416a2",
+      "hackoladeMeta": {},
+      "primaryKey": [
+        {
+          "GUID": "773fd53c-2b2d-43bf-803a-c70f8cd9ed98",
+          "deferrable": "",
+          "constraintName": "withdrawal",
+          "compositePrimaryKey": [
+            {
+              "keyId": "0010c9f8-06be-4398-9763-36a6bc107769"
+            },
+            {
+              "keyId": "5ad312bd-9341-4baa-b5cc-5da660c694c8"
+            }
+          ]
+        }
+      ],
+      "code": "cash_withdrawals"
+    },
+    {
+      "GUID": "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+      "collectionName": "Locations",
+      "type": "object",
+      "properties": [
+        {
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": true,
+          "mode": "varchar",
+          "required": true,
+          "childType": "char",
+          "type": "string",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "triggerUpdateColumns": false,
+          "GUID": "95d12564-c872-43f7-9867-0cdf6e880f92",
+          "code": "h3_09",
+          "name": "H3 index level 9",
+          "length": 16,
+          "childRelationships": [
+            "e6a20d96-a3d4-446c-912f-9e3774b13b73",
+            "77fa6d31-15b3-4ab1-9518-4812ce7b4b24"
+          ],
+          "error": {}
+        },
+        {
+          "name": "Type",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "mode": "varchar",
+          "required": true,
+          "childType": "char",
+          "type": "string",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "triggerUpdateColumns": false,
+          "GUID": "3eb3e3f5-d2dc-4077-8b28-13107bd4598c",
+          "code": "type",
+          "enum": [
+            "ATM",
+            "other"
+          ],
+          "error": {}
+        },
+        {
+          "name": "lat",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": false,
+          "GUID": "6dda0ee1-6d15-47b0-949f-806de6813a04",
+          "error": {}
+        },
+        {
+          "name": "lon",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "unique": false,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "mode": "real",
+          "childType": "numeric",
+          "type": "numeric",
+          "compositeKey": [
+            "compositePartitionKey",
+            "compositePrimaryKey",
+            "compositeUniqueKey",
+            "triggerUpdateColumns"
+          ],
+          "compositePartitionKey": false,
+          "compositePrimaryKey": false,
+          "triggerUpdateColumns": false,
+          "required": false,
+          "GUID": "48820278-12b0-4f20-82a9-658f639eda56",
+          "error": {}
+        }
+      ],
+      "definitions": {
+        "type": "definitions",
+        "properties": [],
+        "GUID": "1a2d1693-5656-4978-ac45-0bfbdd34bc6a"
+      },
+      "isActivated": true,
+      "additionalProperties": false,
+      "memory_optimized": false,
+      "collectionUsers": [],
+      "ifNotExist": true,
+      "table_tablespace_name": "pg_default",
+      "bucketId": "dbba7d74-566e-4fc4-83cd-42195c8416a2",
+      "code": "locations"
+    }
+  ],
+  "buckets": [
+    {
+      "name": "Banking",
+      "type": "bucket",
+      "collectionIds": [
+        "e92fd140-523c-4d9b-b036-1039bb7e0dba",
+        "ee00d8af-a003-4bc1-b7f0-dff23090d847",
+        "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7"
+      ],
+      "backgroundColor": {
+        "r": 216,
+        "g": 0,
+        "b": 115,
+        "a": 1
+      },
+      "show": true,
+      "isActivated": true,
+      "ifNotExist": true,
+      "GUID": "dbba7d74-566e-4fc4-83cd-42195c8416a2"
+    }
+  ],
+  "views": [],
+  "relationships": [
+    {
+      "name": "fk_locations_h3_09_to_cash_withdrawals_h3_09",
+      "relationshipType": "Foreign Key",
+      "parentField": [
+        [
+          "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+          "95d12564-c872-43f7-9867-0cdf6e880f92"
+        ]
+      ],
+      "parentCardinality": "1",
+      "childField": [
+        [
+          "ee00d8af-a003-4bc1-b7f0-dff23090d847",
+          "0010c9f8-06be-4398-9763-36a6bc107769"
+        ]
+      ],
+      "isActivated": true,
+      "childCardinality": "0..n",
+      "parentCollection": "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+      "childCollection": "ee00d8af-a003-4bc1-b7f0-dff23090d847",
+      "GUID": "e6a20d96-a3d4-446c-912f-9e3774b13b73",
+      "hackoladeStyles": {
+        "GUID": "6b036b5c-fcab-40f3-871a-b250d9117e58",
+        "autoPositioning": true,
+        "type": "Orthogonal",
+        "thickness": 2,
+        "color": "#79c4ff",
+        "dataType": "",
+        "shape": [
+          {
+            "x": 2038,
+            "y": 1225
+          },
+          {
+            "x": 2063,
+            "y": 1225
+          },
+          {
+            "x": 2063,
+            "y": 1073
+          },
+          {
+            "x": 1863,
+            "y": 1073
+          }
+        ],
+        "sides": [
+          "right",
+          "right"
+        ]
+      }
+    },
+    {
+      "name": "fk_locations_h3_09_to_transactions_h3_09",
+      "relationshipType": "Foreign Key",
+      "parentField": [
+        [
+          "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+          "95d12564-c872-43f7-9867-0cdf6e880f92"
+        ]
+      ],
+      "parentCardinality": "1",
+      "childField": [
+        [
+          "e92fd140-523c-4d9b-b036-1039bb7e0dba",
+          "4feb6f66-d666-456f-b90a-6bb316a2c7a1"
+        ]
+      ],
+      "isActivated": true,
+      "childCardinality": "0..n",
+      "parentCollection": "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+      "childCollection": "e92fd140-523c-4d9b-b036-1039bb7e0dba",
+      "GUID": "77fa6d31-15b3-4ab1-9518-4812ce7b4b24",
+      "hackoladeStyles": {
+        "GUID": "e477d360-e02d-4cd7-8197-ccdc7c2d28bb",
+        "autoPositioning": true,
+        "type": "Orthogonal",
+        "thickness": 2,
+        "color": "#79c4ff",
+        "dataType": "",
+        "shape": [
+          {
+            "x": 1657,
+            "y": 1301
+          },
+          {
+            "x": 1888,
+            "y": 1301
+          },
+          {
+            "x": 1888,
+            "y": 1108
+          },
+          {
+            "x": 1863,
+            "y": 1108
+          }
+        ],
+        "sides": [
+          "right",
+          "right"
+        ]
+      }
+    }
+  ],
+  "users": [],
+  "diagramViews": [],
+  "idToNameHashTable": {
+    "dbba7d74-566e-4fc4-83cd-42195c8416a2": "Banking",
+    "e92fd140-523c-4d9b-b036-1039bb7e0dba": "Transactions",
+    "6fc5729a-3e5f-4af3-91b5-5b1bea63eec1": "Transaction PK",
+    "4feb6f66-d666-456f-b90a-6bb316a2c7a1": "Transaction location",
+    "ef88cb4e-7902-46f6-a589-686ceee88114": "Customer",
+    "38b9b1c2-28e0-4451-a108-950b4393c775": "Part of the day",
+    "f53139c8-b596-4b59-809a-96025b24a614": "Number of operations",
+    "29cc5c9e-a75f-4bb4-a268-65bdfd856a34": "Sum of transaction",
+    "248caa4b-afd2-4824-b80a-59022d490846": "Average transaction amount",
+    "448b3bc0-1eab-48a9-b81e-f22f736a79a9": "Minimum transaction amount",
+    "5407dab1-2c33-462e-807b-96f0c1b102d3": "Maximum transaction amount",
+    "a8aa7444-d865-446b-a402-ba30790d2212": "Standard deviation of transactions",
+    "5245caad-7605-4fb0-8a81-1cabf88dcf5c": "Number of types of operations performed",
+    "8c870db3-7ea8-4a72-9d98-bf9b6cb4e81e": "Type of operation",
+    "ee00d8af-a003-4bc1-b7f0-dff23090d847": "Cash withdrawals",
+    "0010c9f8-06be-4398-9763-36a6bc107769": "ATM location",
+    "5ad312bd-9341-4baa-b5cc-5da660c694c8": "Customer",
+    "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7": "Locations",
+    "95d12564-c872-43f7-9867-0cdf6e880f92": "H3 index level 9",
+    "3eb3e3f5-d2dc-4077-8b28-13107bd4598c": "Type",
+    "e6a20d96-a3d4-446c-912f-9e3774b13b73": "fk_locations_h3_09_to_cash_withdrawals_h3_09",
+    "77fa6d31-15b3-4ab1-9518-4812ce7b4b24": "fk_locations_h3_09_to_transactions_h3_09",
+    "6dda0ee1-6d15-47b0-949f-806de6813a04": "lat",
+    "48820278-12b0-4f20-82a9-658f639eda56": "lon"
+  },
+  "definitions": {
+    "type": "definitions",
+    "properties": [],
+    "GUID": "985b4797-972a-4fc5-9b63-33ea5a514e32"
+  },
+  "polyglotDefinitions": {
+    "type": "polyglotDefinitions",
+    "properties": [],
+    "GUID": "293754eb-bdac-4001-83dc-d5a798c5af41"
+  },
+  "externalDefinitions": {
+    "type": "externalDefinitions",
+    "properties": [],
+    "GUID": "7fb2475b-d04b-4668-a9e2-d8c5e4d72580"
+  },
+  "sources": [],
+  "decorativeSymbols": [],
+  "dbVersion": "v16.x",
+  "dbVendor": "PostgreSQL",
+  "tablespace_name": "pg_default",
+  "encoding": "UTF8",
+  "appTarget": "PostgreSQL",
+  "creationTS": "2025-03-15T13:19:07.421Z",
+  "GUID": "a8a49f04-3438-413e-afda-868e12bc2696",
+  "isLineageEnabled": false,
+  "lastModifTS": "2025-03-28T11:52:34.264Z",
+  "persistenceSchemaVersion": "8",
+  "isCreatedByPlugin": true,
+  "pluginInformation": {
+    "pluginName": "PostgreSQL",
+    "pluginVersion": "0.2.20",
+    "pluginEngineVersion": "1.0.0"
+  },
+  "applicationInformation": {
+    "version": "8.0.3"
+  },
+  "hackoladeMeta": {},
+  "settings": {
+    "centralPane": {
+      "dbLevel": {
+        "erd": [
+          {
+            "GUID": "e92fd140-523c-4d9b-b036-1039bb7e0dba",
+            "x": 1262,
+            "y": 1177,
+            "width": 395,
+            "height": 248,
+            "color": {}
+          },
+          {
+            "GUID": "ee00d8af-a003-4bc1-b7f0-dff23090d847",
+            "x": 1759,
+            "y": 1189,
+            "width": 279,
+            "height": 72,
+            "color": {}
+          },
+          {
+            "GUID": "20d4fe22-ffe3-4348-b1d2-60e65c0b90b7",
+            "x": 1583,
+            "y": 1038,
+            "width": 280,
+            "height": 105,
+            "color": {}
+          }
+        ],
+        "erdDefinitions": {
+          "erd": [],
+          "rootPath": [],
+          "entities": [],
+          "decorativeSymbols": []
+        },
+        "buckets": [
+          {
+            "x": 1222,
+            "y": 998,
+            "GUID": "dbba7d74-566e-4fc4-83cd-42195c8416a2"
+          }
+        ],
+        "collapsedNodes": [],
+        "activeRelationship": "",
+        "activeRelationshipFields": {
+          "childField": [],
+          "parentField": []
+        },
+        "selectedCollections": [],
+        "displayColorPicker": false,
+        "graphView": {
+          "erd": [],
+          "buckets": [],
+          "decorativeSymbols": [],
+          "forceLayout": true,
+          "defaultLinkLength": 300
+        },
+        "diagramViews": [],
+        "decorativeSymbols": [],
+        "nestedCollectionsLayout": "horizontal",
+        "options": [
+          {
+            "autoWidth": false,
+            "autoHeight": false,
+            "GUID": "e92fd140-523c-4d9b-b036-1039bb7e0dba"
+          },
+          {
+            "autoWidth": false,
+            "autoHeight": false,
+            "GUID": "ee00d8af-a003-4bc1-b7f0-dff23090d847"
+          }
+        ],
+        "relationshipUpdateDisabled": false
+      },
+      "collectionLevel": {},
+      "changed": false
+    },
+    "dtDiagram": {
+      "collapsedNodes": [],
+      "shouldDistributeCollections": false
+    }
+  }
+}
