@@ -3,7 +3,8 @@ SET search_path TO Banking, public;
 
 CREATE TABLE IF NOT EXISTS Banking.locations (
 	h3_09 varchar(16) PRIMARY KEY NOT NULL,
-	type varchar NOT NULL
+	lat real,
+	lon real
 ) TABLESPACE pg_default;
 
 CREATE TABLE IF NOT EXISTS Banking.transactions (
