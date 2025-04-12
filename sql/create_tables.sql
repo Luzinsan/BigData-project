@@ -3,9 +3,7 @@ SET search_path TO Banking, public;
 
 CREATE TABLE IF NOT EXISTS Banking.locations (
 	h3_09 varchar(16) PRIMARY KEY NOT NULL,
-	type varchar NOT NULL,
-	lat real,
-	lon real
+	type varchar NOT NULL
 ) TABLESPACE pg_default;
 
 CREATE TABLE IF NOT EXISTS Banking.transactions (
@@ -29,6 +27,15 @@ CREATE TABLE IF NOT EXISTS Banking.cash_withdrawals (
 	customer_id bigint NOT NULL,
 	CONSTRAINT withdrawal PRIMARY KEY (h3_09, customer_id),
 	CONSTRAINT fk_locations_h3_09_to_cash_withdrawals_h3_09 FOREIGN KEY (h3_09) REFERENCES Banking.locations (h3_09)
+) TABLESPACE pg_default;
+
+CREATE TABLE IF NOT EXISTS Banking.moscow (
+	precise_location varchar(16) PRIMARY KEY NOT NULL,
+	h3_09 varchar(16),
+	tags text,
+	lat real,
+	lon real,
+	CONSTRAINT fk_locations_h3_09_to_moscow_h3_09 FOREIGN KEY (h3_09) REFERENCES Banking.locations (h3_09)
 ) TABLESPACE pg_default;
 
 CREATE INDEX IF NOT EXISTS idx_transaction
