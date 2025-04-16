@@ -6,7 +6,7 @@ from time import time
 from typing import List
 import pandas as pd
 import logging
-from src.config.configs import configs
+from config.configs import configs
 
 
 class PostgresHandler:
@@ -33,10 +33,25 @@ class PostgresHandler:
         try:
             with self.pg_conn.cursor() as cursor:
                 cursor.execute(sql.SQL(query))
+                
                 self.pg_conn.commit()
                 return time() - start_time
         except (Exception, psycopg2.Error) as error:
-            print("Error while sending data into PostgreSQL", error)
+            print("Error while executing query: ", error)
+            return 0.0
+        
+    def copy_from(self, table: str, table_path: str) -> float:
+        start_time = time()
+        try:
+            with self.pg_conn.cursor() as cursor:
+                with open(table_path, 'r') as f:
+                    copy_sql = sql.SQL("COPY {} FROM STDIN WITH (FORMAT CSV, HEADER TRUE)").format(sql.Identifier(table))
+                    cursor.copy_expert(copy_sql, f)
+                self.pg_conn.commit()
+                return time() - start_time  
+        except (Exception, psycopg2.Error) as error:
+            print(f"Error while copying data into PostgreSQL table {table} from {table_path}: ", error)
+            self.pg_conn.rollback() # Rollback transaction on error
             return 0.0
 
     def get(self, query: str) -> Tuple[List[tuple], float]:
