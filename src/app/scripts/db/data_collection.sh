@@ -1,3 +1,5 @@
+#!/bin/bash
+
 mkdir -p data/raw
 curl -o data/raw/hexses_target.lst https://storage.yandexcloud.net/ds-ods/files/data/docs/competitions/DataFusion2024/Data/geo/hexses_target.lst
 curl -o data/raw/transactions.parquet https://storage.yandexcloud.net/ds-ods/files/data/docs/competitions/DataFusion2024/Data/geo/transactions.parquet

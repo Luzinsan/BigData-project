@@ -28,7 +28,7 @@ class PostgresHandler:
         self.config = dict(
             dbname=configs.DB_NAME,
             host=configs.DB_HOST,
-            port=configs.DB_PORT,
+            port=int(configs.DB_PORT),
             user=configs.DB_USER,
             password=configs.DB_PASSWORD
         )
