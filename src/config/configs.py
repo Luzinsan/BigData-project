@@ -3,17 +3,20 @@ from typing import List, Optional
 
 
 class Settings(BaseSettings):
-    DB_NAME: str = 'dbname'
-    DB_USER: str = 'postgres'
-    DB_PASSWORD: str = 'password'
-    DB_HOST: str = 'localhost'
-    DB_PORT: int = 5432
+    """
+    Settings for the project.
+    """
+    DB_NAME: str
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_HOST: str
+    DB_PORT: int
     
-    SQL_SCRIPTS_DIR: str = 'src/app/scripts/'
-    DATA_DIR: str = 'src/data'
+    SCRIPTS_DIR: str = 'src/app/scripts/'
+    DATA_DIR: str = 'data/'
 
     class Config:
         env_file = ".env"
 
 
-configs = Settings()
+settings = Settings()
