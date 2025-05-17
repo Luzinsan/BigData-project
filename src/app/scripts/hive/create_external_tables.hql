@@ -1,26 +1,20 @@
-CREATE DATABASE IF NOT EXISTS team3_projectdb 
-LOCATION '/user/team3/project/hive/warehouse';
-
+DROP DATABASE IF EXISTS team3_projectdb CASCADE;
+CREATE DATABASE team3_projectdb LOCATION '/user/team3/project/hive/warehouse';
 USE team3_projectdb;
 
--- 1. Таблица locations
-CREATE EXTERNAL TABLE IF NOT EXISTS locations_avro
-STORED AS AVRO
-LOCATION '/user/team3/project/warehouse/locations'
-TBLPROPERTIES ('avro.schema.url'='/user/team3/project/warehouse/avsc/locations.avsc');
+CREATE EXTERNAL TABLE locations
+STORED AS PARQUET
+LOCATION '/user/team3/project/warehouse/locations';
 
--- 2. Таблица transactions
-CREATE EXTERNAL TABLE IF NOT EXISTS transactions_avro
-STORED AS AVRO
-LOCATION '/user/team3/project/warehouse/transactions'
-TBLPROPERTIES ('avro.schema.url'='/user/team3/project/warehouse/avsc/transactions.avsc');
+CREATE EXTERNAL TABLE transactions
+STORED AS PARQUET
+LOCATION '/user/team3/project/warehouse/transactions';
 
 -- 3. Партиционированная версия transactions по дате
-CREATE EXTERNAL TABLE IF NOT EXISTS transactions_partitioned
+CREATE EXTERNAL TABLE transactions_partitioned
 PARTITIONED BY (transaction_date STRING)
-STORED AS AVRO
-LOCATION '/user/team3/project/warehouse/transactions_partitioned'
-TBLPROPERTIES ('avro.schema.url'='/user/team3/project/warehouse/avsc/transactions.avsc');
+STORED AS PARQUET
+LOCATION '/user/team3/project/warehouse/transactions_partitioned';
 
 -- Заполняем партиционированную таблицу
 SET hive.exec.dynamic.partition=true;
@@ -33,11 +27,10 @@ SELECT
 FROM transactions_avro t;
 
 -- 4. Таблица cash_withdrawals с бакетированием
-CREATE EXTERNAL TABLE IF NOT EXISTS cash_withdrawals_bucketed
+CREATE EXTERNAL TABLE cash_withdrawals_bucketed
 CLUSTERED BY (customer_id) INTO 10 BUCKETS
-STORED AS AVRO
-LOCATION '/user/team3/project/warehouse/cash_withdrawals_bucketed'
-TBLPROPERTIES ('avro.schema.url'='/user/team3/project/warehouse/avsc/cash_withdrawals.avsc');
+STORED AS PARQUET
+LOCATION '/user/team3/project/warehouse/cash_withdrawals_bucketed';
 
 -- Копируем данные в бакетированную таблицу
 INSERT OVERWRITE TABLE cash_withdrawals_bucketed

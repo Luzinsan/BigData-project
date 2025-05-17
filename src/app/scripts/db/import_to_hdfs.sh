@@ -12,6 +12,7 @@ DB_HOST=$(get_env_var "DB_HOST")
 DB_PORT=$(get_env_var "DB_PORT")
 
 # list all tables from database  
+echo "Listing all tables from PostgreSQL..."
 sqoop list-tables \
   --connect jdbc:postgresql://${DB_HOST}/${DB_NAME} \
   --username $DB_USER \
@@ -36,8 +37,9 @@ sqoop import-all-tables \
   --m 1 \
   2> /dev/null
 
-echo "Creating directory for AVSC schema files..."
-hdfs dfs -mkdir -p $BASE_DIR/avsc
+# We use Parquet format, so we don't need AVSC schema files
+# echo "Creating directory for AVSC schema files..."
+# hdfs dfs -mkdir -p $BASE_DIR/avsc
 
-echo "Copying AVSC schema files to HDFS..."
-hdfs dfs -put output/hdfs/*.avsc $BASE_DIR/avsc/
+# echo "Copying AVSC schema files to HDFS..."
+# hdfs dfs -put output/hdfs/*.avsc $BASE_DIR/avsc/
