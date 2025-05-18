@@ -28,17 +28,19 @@ To create tables and load data into PostgreSQL, run the following command:
 python ./src/app/scripts/db/build_projectdb.py
 ```
 
-```bash
-./src/app/scripts/db/import_to_hdfs.sh
-```
 
 To test different compression methods and data formats (Parquet and Avro), PostgreSQL client (psql) was installed in the home directory. You can activate it by running the following command, but you can skip this step since the optimal parameters are already used in import_to_hdfs.sh:
 ```bash
 export PATH=$HOME/postgresql/bin:$PATH
+./src/app/scripts/db/test_imports.sh
 ```
 
 Now, to load data into HDFS, you need to run the following command:
 ```bash
 ./src/app/scripts/db/import_to_hdfs.sh
+```
+
+```bash
+./src/app/scripts/hive/create_hive.sh
 ```
 

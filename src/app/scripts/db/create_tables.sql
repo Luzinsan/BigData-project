@@ -12,7 +12,7 @@ CREATE TABLE transactions (
 	transaction_pk bigserial PRIMARY KEY NOT NULL,
 	h3_09 varchar(16) NOT NULL,
 	customer_id bigint NOT NULL,
-	datetime_id varchar NOT NULL,
+	datetime_id smallint NOT NULL,
 	count smallint NOT NULL,
 	sum real NOT NULL,
 	avg real NOT NULL,
