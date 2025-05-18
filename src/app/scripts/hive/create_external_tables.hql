@@ -19,10 +19,16 @@ CREATE EXTERNAL TABLE locations (
     lon FLOAT
 )
 STORED AS ORC
-LOCATION 'project/warehouse/locations_orc';
+LOCATION 'project/hive/warehouse/locations';
 
 INSERT OVERWRITE TABLE locations
 SELECT * FROM locations_parquet;
+
+DROP TABLE locations_parquet;
+
+DESCRIBE FORMATTED locations;
+
+SELECT * FROM locations LIMIT 5;
 
 ---------------- Transactions ----------------
 CREATE EXTERNAL TABLE transactions_parquet (
@@ -56,7 +62,7 @@ CREATE EXTERNAL TABLE transactions (
 )
 PARTITIONED BY (datetime_id SMALLINT, mcc_code SMALLINT)
 STORED AS ORC
-LOCATION 'project/warehouse/transactions_orc';
+LOCATION 'project/hive/warehouse/transactions';
 
 INSERT OVERWRITE TABLE transactions
 SELECT 
@@ -74,6 +80,12 @@ SELECT
     mcc_code
 FROM transactions_parquet;
 
+DROP TABLE transactions_parquet;
+
+DESCRIBE FORMATTED transactions;
+
+SELECT * FROM transactions LIMIT 5;
+
 ---------------- Cash Withdrawals ----------------
 CREATE EXTERNAL TABLE cash_withdrawals_parquet (
     customer_id BIGINT,
@@ -88,11 +100,17 @@ CREATE EXTERNAL TABLE cash_withdrawals (
 )
 CLUSTERED BY (customer_id) INTO 50 BUCKETS
 STORED AS ORC
-LOCATION 'project/warehouse/cash_withdrawals_orc';
+LOCATION 'project/hive/warehouse/cash_withdrawals';
 
 INSERT OVERWRITE TABLE cash_withdrawals
 SELECT customer_id, h3_09
 FROM cash_withdrawals_parquet;
+
+DROP TABLE cash_withdrawals_parquet;
+
+DESCRIBE FORMATTED cash_withdrawals;
+
+SELECT * FROM cash_withdrawals LIMIT 5;
 
 ---------------- Moscow ----------------
 CREATE EXTERNAL TABLE moscow_parquet (
@@ -115,7 +133,15 @@ CREATE EXTERNAL TABLE moscow (
     h3_09_center STRING
 )
 STORED AS ORC
-LOCATION 'project/warehouse/moscow_orc';
+LOCATION 'project/hive/warehouse/moscow';
 
 INSERT OVERWRITE TABLE moscow
 SELECT * FROM moscow_parquet;
+
+DROP TABLE moscow_parquet;
+
+DESCRIBE FORMATTED moscow;
+
+SELECT * FROM moscow LIMIT 5;
+
+SHOW TABLES;

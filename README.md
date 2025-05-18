@@ -40,7 +40,13 @@ Now, to load data into HDFS, you need to run the following command:
 ./src/app/scripts/db/import_to_hdfs.sh
 ```
 
+To load tables into Hive with partitioning and bucketing, execute the following script:
 ```bash
 ./src/app/scripts/hive/create_hive.sh
+```
+
+The following script executes queries from `src/app/scripts/hive/queries` directory to perform EDA, with results being written to `output/hive/eda`:
+```bash
+./src/app/scripts/hive/eda.sh
 ```
 
