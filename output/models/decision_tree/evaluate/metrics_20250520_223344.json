@@ -1,0 +1,10 @@
+{
+    "longitude_mae": 0.08590708258046605,
+    "latitude_mae": 0.062477760825730144,
+    "model_params": {
+        "max_depth": 2,
+        "min_instances_per_node": 3,
+        "min_info_gain": 0.0,
+        "num_folds": 3
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "longitude_mae": 0.08601791361682834,
+    "latitude_mae": 0.06255444616038416,
+    "model_params": {
+        "max_iter": 100,
+        "reg_param": 0.1,
+        "elastic_net_param": 0.5,
+        "num_folds": 3
+    }
+}
