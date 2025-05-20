@@ -48,4 +48,4 @@ spark-submit \
     --conf spark.executor.memory=4G \
     --conf spark.executor.instances=2 \
     --conf spark.logConf=false \
-    ./src/app/modelling/mlp.py
+    ./src/app/modelling/gbt.py
