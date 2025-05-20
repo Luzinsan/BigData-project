@@ -64,3 +64,7 @@ Result tables:
 | withdraw_rate |
 | word_frequency |
 
+To run training for all models (Linear Regressor, Decision Tree, Random Forest, MLP), execute the following script:
+```bash
+./src/app/modelling/run_trainings.sh
+```
