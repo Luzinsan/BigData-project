@@ -5,16 +5,22 @@ import time
 
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.ml import Pipeline
-from pyspark.ml.regression import MultilayerPerceptronRegressor
+from pyspark.ml.regression import GBTRegressor
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator, CrossValidatorModel
+
+import sys, os
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from src.app.utils.common import (
     setup_logger,
     init_spark_session,
     load_or_prepare_data,
     save_results,
-    save_metrics
+    save_metrics,
+    prepare_features_pipeline
 )
 
 
@@ -22,55 +28,52 @@ def train_models(
     train_data: DataFrame,
     test_data: DataFrame,
     logger: logging.Logger,
+    spark: SparkSession,
     max_iter: int,
-    layers: List[int],
-    block_size: int,
-    seed: int,
-    num_folds: int
+    max_depth: int,
+    min_instances_per_node: int,
+    subsampling_rate: float,
+    num_folds: int,
+    output_path: str
 ) -> Tuple[CrossValidatorModel, CrossValidatorModel, float, float]:
-    """Train MLP models for coordinate prediction."""
-    pipeline = prepare_features_pipeline()
-    
-    # Data transformation
-    logger.info("Transforming data for longitude prediction...")
-    start_time = time.time()
-    
-    pipeline_model = pipeline.fit(train_data)
-    train_transformed = pipeline_model.transform(train_data).cache()
-    test_transformed = pipeline_model.transform(test_data).cache()
-    
-    # Get feature dimension
-    feature_dim = len(train_transformed.select("features").first()[0])
-    
-    # Update layers with input dimension
-    layers = [feature_dim] + layers + [1]
-    
-    logger.info(
-        f"Data transformation completed in {time.time() - start_time:.2f} seconds"
-    )
+    """Train GBT models for coordinate prediction."""
+    # Get feature names
+    feature_names = [
+        "total_transactions", "unique_mcc_count",
+        "avg_transaction_amount", "std_transaction_amount",
+        "max_time_slot", "min_time_slot",
+        "location_transaction_count", "location_avg_amount",
+        "location_unique_mcc_count"
+    ]
+    # Add hashed feature names for text features
+    feature_names.extend([f"tag_feature_{i}" for i in range(25)])
     
     # Model setup
-    mlp_lon = MultilayerPerceptronRegressor(
+    gbt_lon = GBTRegressor(
         featuresCol="features",
         labelCol="lon",
-        layers=layers,
         maxIter=max_iter,
-        blockSize=block_size,
-        seed=seed
+        maxDepth=max_depth,
+        minInstancesPerNode=min_instances_per_node,
+        subsamplingRate=subsampling_rate,
+        seed=42
     )
     
-    mlp_lat = MultilayerPerceptronRegressor(
+    gbt_lat = GBTRegressor(
         featuresCol="features",
         labelCol="lat",
-        layers=layers,
         maxIter=max_iter,
-        blockSize=block_size,
-        seed=seed
+        maxDepth=max_depth,
+        minInstancesPerNode=min_instances_per_node,
+        subsamplingRate=subsampling_rate,
+        seed=42
     )
     
     param_grid = ParamGridBuilder() \
-        .addGrid(mlp_lon.maxIter, [max_iter]) \
-        .addGrid(mlp_lon.blockSize, [block_size]) \
+        .addGrid(gbt_lon.maxIter, [max_iter]) \
+        .addGrid(gbt_lon.maxDepth, [max_depth]) \
+        .addGrid(gbt_lon.minInstancesPerNode, [min_instances_per_node]) \
+        .addGrid(gbt_lon.subsamplingRate, [subsampling_rate]) \
         .build()
     
     evaluator = RegressionEvaluator(
@@ -80,14 +83,14 @@ def train_models(
     )
     
     cv_lon = CrossValidator(
-        estimator=mlp_lon,
+        estimator=gbt_lon,
         estimatorParamMaps=param_grid,
         evaluator=evaluator,
         numFolds=num_folds
     )
     
     cv_lat = CrossValidator(
-        estimator=mlp_lat,
+        estimator=gbt_lat,
         estimatorParamMaps=param_grid,
         evaluator=evaluator,
         numFolds=num_folds
@@ -96,21 +99,21 @@ def train_models(
     # Model training
     logger.info("Training longitude prediction model...")
     start_time = time.time()
-    cv_model_lon = cv_lon.fit(train_transformed)
+    cv_model_lon = cv_lon.fit(train_data)
     logger.info(
         f"Longitude model training completed in {time.time() - start_time:.2f} seconds"
     )
     
     logger.info("Training latitude prediction model...")
     start_time = time.time()
-    cv_model_lat = cv_lat.fit(train_transformed)
+    cv_model_lat = cv_lat.fit(train_data)
     logger.info(
         f"Latitude model training completed in {time.time() - start_time:.2f} seconds"
     )
     
     # Model evaluation
-    predictions_lon = cv_model_lon.transform(test_transformed)
-    predictions_lat = cv_model_lat.transform(test_transformed)
+    predictions_lon = cv_model_lon.transform(test_data)
+    predictions_lat = cv_model_lat.transform(test_data)
     
     mae_lon = evaluator.evaluate(predictions_lon)
     evaluator.setLabelCol("lat")
@@ -125,66 +128,69 @@ def train_models(
         "latitude_mae": float(mae_lat),
         "model_params": {
             "max_iter": max_iter,
-            "layers": layers,
-            "block_size": block_size,
-            "seed": seed,
+            "max_depth": max_depth,
+            "min_instances_per_node": min_instances_per_node,
+            "subsampling_rate": subsampling_rate,
             "num_folds": num_folds
         }
     }
-    save_metrics(metrics, "mlp", logger)
+    save_metrics(metrics, "gbt", logger)
+    
+    # Save feature importance
+    save_model_parameters(
+        cv_model_lon,
+        feature_names,
+        spark,
+        logger,
+        "gbt",
+        "lon",
+        "importance"
+    )
+    
+    save_model_parameters(
+        cv_model_lat,
+        feature_names,
+        spark,
+        logger,
+        "gbt",
+        "lat",
+        "importance"
+    )
     
     return cv_model_lon, cv_model_lat, mae_lon, mae_lat
 
 
-def main() -> None:
+def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description="Distributed MLP Pipeline")
-    parser.add_argument(
-        "--team",
-        type=str,
-        default="team3",
-        help="Team name"
-    )
-    parser.add_argument(
-        "--warehouse",
-        type=str,
-        default="project/hive/warehouse",
-        help="Hive warehouse path"
-    )
-    parser.add_argument(
-        "--output-path",
-        type=str,
-        default="hdfs:///user/team3",
-        help="Output path for models and predictions"
-    )
+    parser = argparse.ArgumentParser(description="Train GBT models")
     parser.add_argument(
         "--max-iter",
         type=int,
-        default=100,
-        help="Maximum number of iterations for MLP"
+        default=20,
+        help="Maximum number of iterations"
     )
     parser.add_argument(
-        "--hidden-layers",
-        type=str,
-        default="64,32",
-        help="Comma-separated list of hidden layer sizes"
-    )
-    parser.add_argument(
-        "--block-size",
+        "--max-depth",
         type=int,
-        default=128,
-        help="Block size for MLP training"
+        default=5,
+        help="Maximum depth of trees"
     )
     parser.add_argument(
-        "--seed",
+        "--min-instances",
         type=int,
-        default=42,
-        help="Random seed for MLP"
+        default=10,
+        help="Minimum number of instances per node"
+    )
+    parser.add_argument(
+        "--subsampling-rate",
+        type=float,
+        default=1.0,
+        help="Fraction of the training data used for learning each tree"
     )
     parser.add_argument(
         "--num-folds",
         type=int,
-        default=2,
+        default=3,
         help="Number of folds for cross-validation"
     )
     parser.add_argument(
@@ -193,45 +199,54 @@ def main() -> None:
         help="Force data preparation even if preprocessed data exists"
     )
     args = parser.parse_args()
+    output_path = "hdfs:///user/team3"
     
-    layers = [int(x) for x in args.hidden_layers.split(",")]
-    
-    logger = setup_logger("mlp_pipeline")
+    logger = setup_logger("gbt")
     
     try:
-        spark = init_spark_session(args.team, args.warehouse, "Distributed MLP")
+        spark = init_spark_session(
+            "team3", 
+            f"{output_path}/project/warehouse", 
+            "Distributed GBT"
+        )
         spark.sparkContext.setLogLevel("ERROR")
         spark.sparkContext.setCheckpointDir(
-            f"{args.output_path}/checkpoints"
-        )
-        data = load_or_prepare_data(
-            spark,
-            logger,
-            args.output_path,
-            args.force_prepare
+            f"{output_path}/checkpoints"
         )
         
-        train_data, test_data = data.randomSplit([0.8, 0.2], seed=args.seed)
+        # Load or prepare train/test data
+        train_data, test_data = load_or_prepare_data(
+            spark,
+            logger,
+            output_path,
+            args.force_prepare
+        )
         
         cv_model_lon, cv_model_lat, mae_lon, mae_lat = train_models(
             train_data,
             test_data,
             logger,
+            spark,
             args.max_iter,
-            layers,
-            args.block_size,
-            args.seed,
-            args.num_folds
+            args.max_depth,
+            args.min_instances,
+            args.subsampling_rate,
+            args.num_folds,
+            output_path
         )
+        
+        # Get predictions
+        predictions_lon = cv_model_lon.transform(test_data)
+        predictions_lat = cv_model_lat.transform(test_data)
         
         save_results(
             cv_model_lon,
             cv_model_lat,
-            cv_model_lon.transform(test_data),
-            cv_model_lat.transform(test_data),
-            args.output_path,
+            predictions_lon,
+            predictions_lat,
+            output_path,
             logger,
-            "mlp"
+            "gbt"
         )
         
     except Exception as e:

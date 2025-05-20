@@ -37,7 +37,8 @@ from src.app.utils.common import (
     load_or_prepare_data,
     save_results,
     save_metrics,
-    save_model_coefficients
+    prepare_features_pipeline,
+    save_model_parameters
 )
 
 
@@ -45,22 +46,14 @@ def train_models(
     train_data: DataFrame,
     test_data: DataFrame,
     logger: logging.Logger,
+    spark: SparkSession,
     max_iter: int,
     reg_param: float,
     elastic_net_param: float,
-    num_folds: int
+    num_folds: int,
+    output_path: str
 ) -> Tuple[CrossValidatorModel, CrossValidatorModel, float, float]:
     """Train linear regression models for coordinate prediction."""
-    pipeline = prepare_features_pipeline()
-    
-    # Data transformation
-    logger.info("Transforming data for longitude prediction...")
-    start_time = time.time()
-    
-    pipeline_model = pipeline.fit(train_data)
-    train_transformed = pipeline_model.transform(train_data).cache()
-    test_transformed = pipeline_model.transform(test_data).cache()
-    
     # Get feature names
     feature_names = [
         "total_transactions", "unique_mcc_count",
@@ -71,10 +64,6 @@ def train_models(
     ]
     # Add hashed feature names for text features
     feature_names.extend([f"tag_feature_{i}" for i in range(25)])
-    
-    logger.info(
-        f"Data transformation completed in {time.time() - start_time:.2f} seconds"
-    )
     
     # Model setup
     lr_lon = LinearRegression(
@@ -123,21 +112,21 @@ def train_models(
     # Model training
     logger.info("Training longitude prediction model...")
     start_time = time.time()
-    cv_model_lon = cv_lon.fit(train_transformed)
+    cv_model_lon = cv_lon.fit(train_data)
     logger.info(
         f"Longitude model training completed in {time.time() - start_time:.2f} seconds"
     )
     
     logger.info("Training latitude prediction model...")
     start_time = time.time()
-    cv_model_lat = cv_lat.fit(train_transformed)
+    cv_model_lat = cv_lat.fit(train_data)
     logger.info(
         f"Latitude model training completed in {time.time() - start_time:.2f} seconds"
     )
     
     # Model evaluation
-    predictions_lon = cv_model_lon.transform(test_transformed)
-    predictions_lat = cv_model_lat.transform(test_transformed)
+    predictions_lon = cv_model_lon.transform(test_data)
+    predictions_lat = cv_model_lat.transform(test_data)
     
     mae_lon = evaluator.evaluate(predictions_lon)
     evaluator.setLabelCol("lat")
@@ -160,47 +149,31 @@ def train_models(
     save_metrics(metrics, "linear", logger)
     
     # Save coefficients
-    save_model_coefficients(
+    save_model_parameters(
         cv_model_lon,
         feature_names,
-        args.output_path,
+        spark,
         logger,
         "linear",
-        "lon"
+        "lon",
+        "coefficients"
     )
-    save_model_coefficients(
+    save_model_parameters(
         cv_model_lat,
         feature_names,
-        args.output_path,
+        spark,
         logger,
         "linear",
-        "lat"
+        "lat",
+        "coefficients"
     )
     
     return cv_model_lon, cv_model_lat, mae_lon, mae_lat
 
 
-def main() -> None:
-    """Main function."""
-    parser = argparse.ArgumentParser(description="Distributed Linear Regression Pipeline")
-    parser.add_argument(
-        "--team",
-        type=str,
-        default="team3",
-        help="Team name"
-    )
-    parser.add_argument(
-        "--warehouse",
-        type=str,
-        default="project/hive/warehouse",
-        help="Hive warehouse path"
-    )
-    parser.add_argument(
-        "--output-path",
-        type=str,
-        default="hdfs:///user/team3",
-        help="Output path for models and predictions"
-    )
+def main():
+    """Main function to run the linear regression model training."""
+    parser = argparse.ArgumentParser(description="Train linear regression models")
     parser.add_argument(
         "--max-iter",
         type=int,
@@ -216,13 +189,13 @@ def main() -> None:
     parser.add_argument(
         "--elastic-net-param",
         type=float,
-        default=0.0,
-        help="Elastic net mixing parameter"
+        default=0.5,
+        help="Elastic net parameter"
     )
     parser.add_argument(
         "--num-folds",
         type=int,
-        default=2,
+        default=3,
         help="Number of folds for cross-validation"
     )
     parser.add_argument(
@@ -231,44 +204,51 @@ def main() -> None:
         help="Force data preparation even if preprocessed data exists"
     )
     args = parser.parse_args()
+    output_path = "hdfs:///user/team3"
     
-    logger = setup_logger("linear_regression")
+    logger = setup_logger("linear")
     
     try:
-        spark = init_spark_session(args.team, args.warehouse, "Distributed Linear Regression")
+        spark = init_spark_session(
+            "team3", 
+            f"{output_path}/project/warehouse", 
+            "Distributed Linear Regression"
+        )
         spark.sparkContext.setLogLevel("ERROR")
         spark.sparkContext.setCheckpointDir(
-            f"{args.output_path}/checkpoints"
+            f"{output_path}/checkpoints"
         )
         
-        # Load or prepare data
-        data = load_or_prepare_data(
+        # Load or prepare train/test data
+        train_data, test_data = load_or_prepare_data(
             spark,
             logger,
-            args.output_path,
+            output_path,
             args.force_prepare
         )
         
-        train_data, test_data = data.randomSplit([0.8, 0.2], seed=42)
-        
-        # Train models
         cv_model_lon, cv_model_lat, mae_lon, mae_lat = train_models(
             train_data,
             test_data,
             logger,
+            spark,
             args.max_iter,
             args.reg_param,
             args.elastic_net_param,
-            args.num_folds
+            args.num_folds,
+            output_path
         )
         
-        # Save results
+        # Get predictions
+        predictions_lon = cv_model_lon.transform(test_data)
+        predictions_lat = cv_model_lat.transform(test_data)
+        
         save_results(
             cv_model_lon,
             cv_model_lat,
-            cv_model_lon.transform(test_data),
-            cv_model_lat.transform(test_data),
-            args.output_path,
+            predictions_lon,
+            predictions_lat,
+            output_path,
             logger,
             "linear"
         )

@@ -74,7 +74,7 @@ def init_spark_session(team: str, warehouse: str, app_name: str) -> SparkSession
     """Initialize Spark session."""
     return SparkSession.builder \
         .appName(f"{team} - {app_name}") \
-        .master("yarn") \
+        .master("local[*]") \
         .config("hive.metastore.uris", "thrift://hadoop-02.uni.innopolis.ru:9883") \
         .config("spark.sql.warehouse.dir", warehouse) \
         .config("spark.sql.shuffle.partitions", "100") \
@@ -99,6 +99,9 @@ def load_data(
     start_time = time.time()
     
     transactions = spark.read.format("parquet").table("team3_projectdb.transactions")
+    # Filter out transactions with sum > 400000
+    transactions = transactions.filter(col("sum") <= 200000)
+    
     cash_withdrawals = spark.read.format("parquet").table(
         "team3_projectdb.cash_withdrawals"
     )
@@ -317,9 +320,9 @@ def load_or_prepare_data(
     logger: logging.Logger,
     output_path: str,
     force_prepare: bool = False
-) -> DataFrame:
+) -> Tuple[DataFrame, DataFrame]:
     """
-    Load preprocessed data if exists, otherwise prepare it.
+    Load preprocessed train/test data if exists, otherwise prepare it.
     
     Args:
         spark: SparkSession instance
@@ -328,16 +331,28 @@ def load_or_prepare_data(
         force_prepare: Force data preparation even if preprocessed data exists
         
     Returns:
-        DataFrame: Preprocessed data
+        Tuple[DataFrame, DataFrame]: Train and test datasets
     """
-    preprocessed_path = f"{output_path}/preprocessed_data"
+    hdfs_train_path = f"{output_path}/project/data/train"
+    hdfs_test_path = f"{output_path}/project/data/test"
     
     if not force_prepare:
         try:
-            logger.info("Attempting to load preprocessed data...")
-            data = spark.read.parquet(preprocessed_path)
-            logger.info("Successfully loaded preprocessed data")
-            return data
+            logger.info("Attempting to load preprocessed train/test data...")
+            # Load base data
+            train_base = spark.read.json(hdfs_train_path)
+            test_base = spark.read.json(hdfs_test_path)
+            logger.info("Successfully loaded preprocessed train/test data")
+            
+            pipeline = prepare_features_pipeline()
+            pipeline_model = pipeline.fit(train_base)
+            
+            train_data = pipeline_model.transform(train_base).cache()
+            test_data = pipeline_model.transform(test_base).cache()
+            
+            logger.info("Feature pipeline reapplied successfully")
+            return train_data, test_data
+            
         except Exception as e:
             logger.warning(
                 f"Could not load preprocessed data: {str(e)}. "
@@ -364,11 +379,45 @@ def load_or_prepare_data(
         logger
     )
     
-    logger.info("Saving preprocessed data...")
-    data.write.mode("overwrite").parquet(preprocessed_path)
-    logger.info("Preprocessed data saved successfully")
+    # Split into train/test
+    train_data, test_data = data.randomSplit([0.8, 0.2], seed=42)
     
-    return data
+    # Apply feature pipeline
+    logger.info("Applying feature pipeline to train and test data...")
+    pipeline = prepare_features_pipeline()
+    pipeline_model = pipeline.fit(train_data)
+    
+    train_transformed = pipeline_model.transform(train_data).cache()
+    test_transformed = pipeline_model.transform(test_data).cache()
+    
+    logger.info("Feature pipeline applied successfully")
+    
+    # Save to HDFS
+    logger.info(f"Saving train data to HDFS: {hdfs_train_path}")
+    train_data.write.mode("overwrite").json(hdfs_train_path)
+    
+    logger.info(f"Saving test data to HDFS: {hdfs_test_path}")
+    test_data.write.mode("overwrite").json(hdfs_test_path)
+    
+    os.makedirs('data/modelling/', exist_ok=True)
+    local_train_path = "data/modelling/train.json"
+    local_test_path = "data/modelling/test.json"
+    
+    logger.info(f"Saving train data locally: {local_train_path}")
+    train_data.toPandas().to_json(local_train_path, orient="records", lines=True)
+    
+    logger.info(f"Saving test data locally: {local_test_path}")
+    test_data.toPandas().to_json(local_test_path, orient="records", lines=True)
+    
+    logger.info("Train and test data saved successfully")
+
+    pipeline = prepare_features_pipeline()
+    pipeline_model = pipeline.fit(train_data)
+    
+    train_data = pipeline_model.transform(train_data).cache()
+    test_data = pipeline_model.transform(test_data).cache()
+    
+    return train_data, test_data
 
 
 def save_metrics(
@@ -406,7 +455,7 @@ def save_metrics(
 def save_model_parameters(
     model: CrossValidatorModel,
     feature_names: List[str],
-    output_path: str,
+    spark: SparkSession,
     logger: logging.Logger,
     model_type: str,
     coord_type: str,
@@ -418,7 +467,7 @@ def save_model_parameters(
     Args:
         model: Trained CrossValidatorModel
         feature_names: List of feature names
-        output_path: Path to save results
+        spark: SparkSession instance
         logger: Logger instance
         model_type: Type of model (e.g., "linear", "mlp", "decision_tree", "random_forest")
         coord_type: Type of coordinate ("lon" or "lat")
@@ -447,15 +496,16 @@ def save_model_parameters(
         
         # Save to Hive
         table_name = f"team3_projectdb.model_{param_type}"
-        param_df.write.mode("append").saveAsTable(table_name)
+        param_df.write.mode("overwrite").saveAsTable(table_name)
         
         # Save locally
-        local_dir = f"output/models/{model_type}/{param_type}"
+        local_dir = f"output/models/{model_type}"
         os.makedirs(local_dir, exist_ok=True)
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        os.makedirs(f"{local_dir}/importance", exist_ok=True)
         param_df.toPandas().to_csv(
-            f"{local_dir}/{coord_type}_{timestamp}.csv",
+            f"{local_dir}/importance/{coord_type}_{timestamp}.csv",
             index=False
         )
         
