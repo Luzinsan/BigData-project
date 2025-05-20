@@ -50,3 +50,17 @@ The following script executes queries from `src/app/scripts/hive/queries` direct
 ./src/app/scripts/hive/eda.sh
 ```
 
+Result tables:
+
+| tab_name |
+|----------|
+| cash_withdrawals |
+| cleaned_moscow |
+| locations |
+| moscow |
+| q4_results |
+| transactions |
+| transactions_per_h3 |
+| withdraw_rate |
+| word_frequency |
+

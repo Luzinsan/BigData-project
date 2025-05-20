@@ -2,34 +2,12 @@ from typing import Tuple, List
 import argparse
 import logging
 import time
-from datetime import datetime
 
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.ml import Pipeline, PipelineModel
-from pyspark.ml.feature import (
-    VectorAssembler,
-    StandardScaler,
-    HashingTF,
-    Tokenizer
-)
-from pyspark.ml.regression import LinearRegression
+from pyspark.ml import Pipeline
+from pyspark.ml.regression import RandomForestRegressor
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator, CrossValidatorModel
-from pyspark.sql.functions import (
-    col,
-    concat_ws,
-    collect_list,
-    when,
-    count,
-    max,
-    min,
-    avg,
-    stddev
-)
-import os, sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from src.app.utils.common import (
     setup_logger,
@@ -37,7 +15,7 @@ from src.app.utils.common import (
     load_or_prepare_data,
     save_results,
     save_metrics,
-    save_model_coefficients
+    save_model_parameters
 )
 
 
@@ -45,12 +23,14 @@ def train_models(
     train_data: DataFrame,
     test_data: DataFrame,
     logger: logging.Logger,
-    max_iter: int,
-    reg_param: float,
-    elastic_net_param: float,
+    num_trees: int,
+    max_depth: int,
+    min_instances_per_node: int,
+    min_info_gain: float,
+    subsampling_rate: float,
     num_folds: int
 ) -> Tuple[CrossValidatorModel, CrossValidatorModel, float, float]:
-    """Train linear regression models for coordinate prediction."""
+    """Train random forest models for coordinate prediction."""
     pipeline = prepare_features_pipeline()
     
     # Data transformation
@@ -61,43 +41,42 @@ def train_models(
     train_transformed = pipeline_model.transform(train_data).cache()
     test_transformed = pipeline_model.transform(test_data).cache()
     
-    # Get feature names
-    feature_names = [
-        "total_transactions", "unique_mcc_count",
-        "avg_transaction_amount", "std_transaction_amount",
-        "max_time_slot", "min_time_slot",
-        "location_transaction_count", "location_avg_amount",
-        "location_unique_mcc_count"
-    ]
-    # Add hashed feature names for text features
-    feature_names.extend([f"tag_feature_{i}" for i in range(25)])
-    
     logger.info(
         f"Data transformation completed in {time.time() - start_time:.2f} seconds"
     )
     
+    # Get feature names
+    feature_names = train_transformed.schema["features"].metadata["ml_attr"]["attrs"]["numeric"] + \
+                   train_transformed.schema["features"].metadata["ml_attr"]["attrs"]["binary"]
+    feature_names = [f["name"] for f in feature_names]
+    
     # Model setup
-    lr_lon = LinearRegression(
+    rf_lon = RandomForestRegressor(
         featuresCol="features",
         labelCol="lon",
-        maxIter=max_iter,
-        regParam=reg_param,
-        elasticNetParam=elastic_net_param,
-        solver="normal"
+        numTrees=num_trees,
+        maxDepth=max_depth,
+        minInstancesPerNode=min_instances_per_node,
+        minInfoGain=min_info_gain,
+        subsamplingRate=subsampling_rate
     )
     
-    lr_lat = LinearRegression(
+    rf_lat = RandomForestRegressor(
         featuresCol="features",
         labelCol="lat",
-        maxIter=max_iter,
-        regParam=reg_param,
-        elasticNetParam=elastic_net_param,
-        solver="normal"
+        numTrees=num_trees,
+        maxDepth=max_depth,
+        minInstancesPerNode=min_instances_per_node,
+        minInfoGain=min_info_gain,
+        subsamplingRate=subsampling_rate
     )
     
     param_grid = ParamGridBuilder() \
-        .addGrid(lr_lon.regParam, [reg_param]) \
-        .addGrid(lr_lon.elasticNetParam, [elastic_net_param]) \
+        .addGrid(rf_lon.numTrees, [num_trees]) \
+        .addGrid(rf_lon.maxDepth, [max_depth]) \
+        .addGrid(rf_lon.minInstancesPerNode, [min_instances_per_node]) \
+        .addGrid(rf_lon.minInfoGain, [min_info_gain]) \
+        .addGrid(rf_lon.subsamplingRate, [subsampling_rate]) \
         .build()
     
     evaluator = RegressionEvaluator(
@@ -107,14 +86,14 @@ def train_models(
     )
     
     cv_lon = CrossValidator(
-        estimator=lr_lon,
+        estimator=rf_lon,
         estimatorParamMaps=param_grid,
         evaluator=evaluator,
         numFolds=num_folds
     )
     
     cv_lat = CrossValidator(
-        estimator=lr_lat,
+        estimator=rf_lat,
         estimatorParamMaps=param_grid,
         evaluator=evaluator,
         numFolds=num_folds
@@ -151,30 +130,35 @@ def train_models(
         "longitude_mae": float(mae_lon),
         "latitude_mae": float(mae_lat),
         "model_params": {
-            "max_iter": max_iter,
-            "reg_param": reg_param,
-            "elastic_net_param": elastic_net_param,
+            "num_trees": num_trees,
+            "max_depth": max_depth,
+            "min_instances_per_node": min_instances_per_node,
+            "min_info_gain": min_info_gain,
+            "subsampling_rate": subsampling_rate,
             "num_folds": num_folds
         }
     }
-    save_metrics(metrics, "linear", logger)
+    save_metrics(metrics, "random_forest", logger)
     
-    # Save coefficients
-    save_model_coefficients(
+    # Save feature importance
+    save_model_parameters(
         cv_model_lon,
         feature_names,
         args.output_path,
         logger,
-        "linear",
-        "lon"
+        "random_forest",
+        "lon",
+        "importance"
     )
-    save_model_coefficients(
+    
+    save_model_parameters(
         cv_model_lat,
         feature_names,
         args.output_path,
         logger,
-        "linear",
-        "lat"
+        "random_forest",
+        "lat",
+        "importance"
     )
     
     return cv_model_lon, cv_model_lat, mae_lon, mae_lat
@@ -182,7 +166,7 @@ def train_models(
 
 def main() -> None:
     """Main function."""
-    parser = argparse.ArgumentParser(description="Distributed Linear Regression Pipeline")
+    parser = argparse.ArgumentParser(description="Distributed Random Forest Pipeline")
     parser.add_argument(
         "--team",
         type=str,
@@ -202,22 +186,34 @@ def main() -> None:
         help="Output path for models and predictions"
     )
     parser.add_argument(
-        "--max-iter",
+        "--num-trees",
         type=int,
-        default=100,
-        help="Maximum number of iterations for linear regression"
+        default=20,
+        help="Number of trees in the forest"
     )
     parser.add_argument(
-        "--reg-param",
-        type=float,
-        default=0.1,
-        help="Regularization parameter"
+        "--max-depth",
+        type=int,
+        default=5,
+        help="Maximum depth of the trees"
     )
     parser.add_argument(
-        "--elastic-net-param",
+        "--min-instances",
+        type=int,
+        default=10,
+        help="Minimum number of instances per node"
+    )
+    parser.add_argument(
+        "--min-info-gain",
         type=float,
         default=0.0,
-        help="Elastic net mixing parameter"
+        help="Minimum information gain for a split"
+    )
+    parser.add_argument(
+        "--subsampling-rate",
+        type=float,
+        default=1.0,
+        help="Fraction of the training data used for learning each tree"
     )
     parser.add_argument(
         "--num-folds",
@@ -232,16 +228,15 @@ def main() -> None:
     )
     args = parser.parse_args()
     
-    logger = setup_logger("linear_regression")
+    logger = setup_logger("random_forest")
     
     try:
-        spark = init_spark_session(args.team, args.warehouse, "Distributed Linear Regression")
+        spark = init_spark_session(args.team, args.warehouse, "Distributed Random Forest")
         spark.sparkContext.setLogLevel("ERROR")
         spark.sparkContext.setCheckpointDir(
             f"{args.output_path}/checkpoints"
         )
         
-        # Load or prepare data
         data = load_or_prepare_data(
             spark,
             logger,
@@ -251,18 +246,18 @@ def main() -> None:
         
         train_data, test_data = data.randomSplit([0.8, 0.2], seed=42)
         
-        # Train models
         cv_model_lon, cv_model_lat, mae_lon, mae_lat = train_models(
             train_data,
             test_data,
             logger,
-            args.max_iter,
-            args.reg_param,
-            args.elastic_net_param,
+            args.num_trees,
+            args.max_depth,
+            args.min_instances,
+            args.min_info_gain,
+            args.subsampling_rate,
             args.num_folds
         )
         
-        # Save results
         save_results(
             cv_model_lon,
             cv_model_lat,
@@ -270,7 +265,7 @@ def main() -> None:
             cv_model_lat.transform(test_data),
             args.output_path,
             logger,
-            "linear"
+            "random_forest"
         )
         
     except Exception as e:
@@ -282,4 +277,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main() 

@@ -2,34 +2,12 @@ from typing import Tuple, List
 import argparse
 import logging
 import time
-from datetime import datetime
 
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.ml import Pipeline, PipelineModel
-from pyspark.ml.feature import (
-    VectorAssembler,
-    StandardScaler,
-    HashingTF,
-    Tokenizer
-)
-from pyspark.ml.regression import LinearRegression
+from pyspark.ml import Pipeline
+from pyspark.ml.regression import DecisionTreeRegressor
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator, CrossValidatorModel
-from pyspark.sql.functions import (
-    col,
-    concat_ws,
-    collect_list,
-    when,
-    count,
-    max,
-    min,
-    avg,
-    stddev
-)
-import os, sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from src.app.utils.common import (
     setup_logger,
@@ -37,7 +15,7 @@ from src.app.utils.common import (
     load_or_prepare_data,
     save_results,
     save_metrics,
-    save_model_coefficients
+    save_model_parameters
 )
 
 
@@ -45,12 +23,12 @@ def train_models(
     train_data: DataFrame,
     test_data: DataFrame,
     logger: logging.Logger,
-    max_iter: int,
-    reg_param: float,
-    elastic_net_param: float,
+    max_depth: int,
+    min_instances_per_node: int,
+    min_info_gain: float,
     num_folds: int
 ) -> Tuple[CrossValidatorModel, CrossValidatorModel, float, float]:
-    """Train linear regression models for coordinate prediction."""
+    """Train decision tree models for coordinate prediction."""
     pipeline = prepare_features_pipeline()
     
     # Data transformation
@@ -61,43 +39,36 @@ def train_models(
     train_transformed = pipeline_model.transform(train_data).cache()
     test_transformed = pipeline_model.transform(test_data).cache()
     
-    # Get feature names
-    feature_names = [
-        "total_transactions", "unique_mcc_count",
-        "avg_transaction_amount", "std_transaction_amount",
-        "max_time_slot", "min_time_slot",
-        "location_transaction_count", "location_avg_amount",
-        "location_unique_mcc_count"
-    ]
-    # Add hashed feature names for text features
-    feature_names.extend([f"tag_feature_{i}" for i in range(25)])
-    
     logger.info(
         f"Data transformation completed in {time.time() - start_time:.2f} seconds"
     )
     
+    # Get feature names
+    feature_names = train_transformed.schema["features"].metadata["ml_attr"]["attrs"]["numeric"] + \
+                   train_transformed.schema["features"].metadata["ml_attr"]["attrs"]["binary"]
+    feature_names = [f["name"] for f in feature_names]
+    
     # Model setup
-    lr_lon = LinearRegression(
+    dt_lon = DecisionTreeRegressor(
         featuresCol="features",
         labelCol="lon",
-        maxIter=max_iter,
-        regParam=reg_param,
-        elasticNetParam=elastic_net_param,
-        solver="normal"
+        maxDepth=max_depth,
+        minInstancesPerNode=min_instances_per_node,
+        minInfoGain=min_info_gain
     )
     
-    lr_lat = LinearRegression(
+    dt_lat = DecisionTreeRegressor(
         featuresCol="features",
         labelCol="lat",
-        maxIter=max_iter,
-        regParam=reg_param,
-        elasticNetParam=elastic_net_param,
-        solver="normal"
+        maxDepth=max_depth,
+        minInstancesPerNode=min_instances_per_node,
+        minInfoGain=min_info_gain
     )
     
     param_grid = ParamGridBuilder() \
-        .addGrid(lr_lon.regParam, [reg_param]) \
-        .addGrid(lr_lon.elasticNetParam, [elastic_net_param]) \
+        .addGrid(dt_lon.maxDepth, [max_depth]) \
+        .addGrid(dt_lon.minInstancesPerNode, [min_instances_per_node]) \
+        .addGrid(dt_lon.minInfoGain, [min_info_gain]) \
         .build()
     
     evaluator = RegressionEvaluator(
@@ -107,14 +78,14 @@ def train_models(
     )
     
     cv_lon = CrossValidator(
-        estimator=lr_lon,
+        estimator=dt_lon,
         estimatorParamMaps=param_grid,
         evaluator=evaluator,
         numFolds=num_folds
     )
     
     cv_lat = CrossValidator(
-        estimator=lr_lat,
+        estimator=dt_lat,
         estimatorParamMaps=param_grid,
         evaluator=evaluator,
         numFolds=num_folds
@@ -151,30 +122,33 @@ def train_models(
         "longitude_mae": float(mae_lon),
         "latitude_mae": float(mae_lat),
         "model_params": {
-            "max_iter": max_iter,
-            "reg_param": reg_param,
-            "elastic_net_param": elastic_net_param,
+            "max_depth": max_depth,
+            "min_instances_per_node": min_instances_per_node,
+            "min_info_gain": min_info_gain,
             "num_folds": num_folds
         }
     }
-    save_metrics(metrics, "linear", logger)
+    save_metrics(metrics, "decision_tree", logger)
     
-    # Save coefficients
-    save_model_coefficients(
+    # Save feature importance
+    save_model_parameters(
         cv_model_lon,
         feature_names,
         args.output_path,
         logger,
-        "linear",
-        "lon"
+        "decision_tree",
+        "lon",
+        "importance"
     )
-    save_model_coefficients(
+    
+    save_model_parameters(
         cv_model_lat,
         feature_names,
         args.output_path,
         logger,
-        "linear",
-        "lat"
+        "decision_tree",
+        "lat",
+        "importance"
     )
     
     return cv_model_lon, cv_model_lat, mae_lon, mae_lat
@@ -182,7 +156,7 @@ def train_models(
 
 def main() -> None:
     """Main function."""
-    parser = argparse.ArgumentParser(description="Distributed Linear Regression Pipeline")
+    parser = argparse.ArgumentParser(description="Distributed Decision Tree Pipeline")
     parser.add_argument(
         "--team",
         type=str,
@@ -202,22 +176,22 @@ def main() -> None:
         help="Output path for models and predictions"
     )
     parser.add_argument(
-        "--max-iter",
+        "--max-depth",
         type=int,
-        default=100,
-        help="Maximum number of iterations for linear regression"
+        default=5,
+        help="Maximum depth of the tree"
     )
     parser.add_argument(
-        "--reg-param",
-        type=float,
-        default=0.1,
-        help="Regularization parameter"
+        "--min-instances",
+        type=int,
+        default=10,
+        help="Minimum number of instances per node"
     )
     parser.add_argument(
-        "--elastic-net-param",
+        "--min-info-gain",
         type=float,
         default=0.0,
-        help="Elastic net mixing parameter"
+        help="Minimum information gain for a split"
     )
     parser.add_argument(
         "--num-folds",
@@ -232,16 +206,15 @@ def main() -> None:
     )
     args = parser.parse_args()
     
-    logger = setup_logger("linear_regression")
+    logger = setup_logger("decision_tree")
     
     try:
-        spark = init_spark_session(args.team, args.warehouse, "Distributed Linear Regression")
+        spark = init_spark_session(args.team, args.warehouse, "Distributed Decision Tree")
         spark.sparkContext.setLogLevel("ERROR")
         spark.sparkContext.setCheckpointDir(
             f"{args.output_path}/checkpoints"
         )
         
-        # Load or prepare data
         data = load_or_prepare_data(
             spark,
             logger,
@@ -251,18 +224,16 @@ def main() -> None:
         
         train_data, test_data = data.randomSplit([0.8, 0.2], seed=42)
         
-        # Train models
         cv_model_lon, cv_model_lat, mae_lon, mae_lat = train_models(
             train_data,
             test_data,
             logger,
-            args.max_iter,
-            args.reg_param,
-            args.elastic_net_param,
+            args.max_depth,
+            args.min_instances,
+            args.min_info_gain,
             args.num_folds
         )
         
-        # Save results
         save_results(
             cv_model_lon,
             cv_model_lat,
@@ -270,7 +241,7 @@ def main() -> None:
             cv_model_lat.transform(test_data),
             args.output_path,
             logger,
-            "linear"
+            "decision_tree"
         )
         
     except Exception as e:
@@ -282,4 +253,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main() 
