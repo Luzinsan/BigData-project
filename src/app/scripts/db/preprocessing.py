@@ -6,7 +6,7 @@ from sklearn.neighbors import BallTree
 import sys
 import logging
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 from src.config.configs import settings
 from src.app.utils.common import setup_logger
 

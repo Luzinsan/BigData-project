@@ -1,27 +1,29 @@
 USE team3_projectdb;
 
-DROP TABLE IF EXISTS q2_results;
+DROP TABLE IF EXISTS word_frequency;
 
-CREATE TABLE q2_results(
-  h3_09       STRING,
-  trans_count INT
+CREATE TABLE word_frequency(
+  text_label  STRING,
+  size_metric INT
 )
 
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 LOCATION 'project/hive/warehouse/q2';
 
-INSERT OVERWRITE TABLE q2_results
-SELECT
-  h3_09,
-  COUNT(*) AS trans_count
-FROM transactions
-GROUP BY h3_09;
+INSERT OVERWRITE TABLE word_frequency
+SELECT 
+  q.place_name AS text_label,
+  COUNT(*) as size_metric
+FROM cleaned_moscow q
+INNER JOIN transactions t ON q.h3_09_center = t.h3_09
+GROUP BY q.place_name
+ORDER BY size_metric DESC;
 
 SET hive.resultset.use.unique.column.names=false;
 SET hive.cli.print.header=true;
 
 SELECT *
-FROM q2_results
-ORDER BY trans_count DESC
+FROM word_frequency
+ORDER BY size_metric DESC
 LIMIT 20;

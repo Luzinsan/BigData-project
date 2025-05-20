@@ -1,29 +1,26 @@
 USE team3_projectdb;
 
-DROP TABLE IF EXISTS q3_results;
+DROP TABLE IF EXISTS withdraw_rate;
 
-CREATE TABLE q3_results(
-  h3_09    STRING,
-  avg_sum  DOUBLE,
-  max_sum  DOUBLE,
-  min_sum  DOUBLE
+CREATE TABLE withdraw_rate(
+  withdraw_tx    BIGINT,
+  total_tx       BIGINT
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 LOCATION 'project/hive/warehouse/q3';
 
-INSERT OVERWRITE TABLE q3_results
-SELECT
-  h3_09,
-  ROUND(AVG(CAST(`sum` AS DOUBLE)), 2) AS avg_sum,
-  MAX(CAST(`sum` AS DOUBLE))           AS max_sum,
-  MIN(CAST(`sum` AS DOUBLE))           AS min_sum
-FROM transactions
-GROUP BY h3_09;
+INSERT OVERWRITE TABLE withdraw_rate
+SELECT SUM(CASE
+           WHEN w.customer_id IS NOT NULL THEN 1
+           ELSE 0
+        END) AS withdraw_tx,
+      COUNT(*) AS total_tx
+FROM transactions t
+LEFT JOIN cash_withdrawals w ON t.customer_id = w.customer_id
+AND t.h3_09 = w.h3_09;
 
 SET hive.resultset.use.unique.column.names=false;
 SET hive.cli.print.header=true;
 
-SELECT * FROM q3_results
-ORDER BY avg_sum DESC
-LIMIT 20;
+SELECT * FROM withdraw_rate;

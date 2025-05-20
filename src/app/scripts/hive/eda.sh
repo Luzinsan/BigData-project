@@ -20,3 +20,10 @@ for query in src/app/scripts/hive/queries/q*.hql; do
     | grep -v "^$" \
     > "output/hive/eda/${query_name}.csv"
 done
+
+beeline -u jdbc:hive2://hadoop-03.uni.innopolis.ru:10001 \
+    --outputformat=csv2 \
+    --silent=true \
+    -n team3 \
+    -p $password \
+    -e "USE team3_projectdb; SHOW TABLES;"

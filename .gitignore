@@ -125,6 +125,6 @@ dmypy.json
 
 data/
 
-output/
+output/hdfs/
 
 src/app/scripts/hive/metastore_db/

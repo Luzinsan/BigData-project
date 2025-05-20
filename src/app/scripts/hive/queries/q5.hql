@@ -1,8 +1,8 @@
 USE team3_projectdb;
 
-DROP TABLE IF EXISTS q5_results;
+DROP TABLE IF EXISTS transactions_per_h3;
 
-CREATE TABLE q5_results(
+CREATE TABLE transactions_per_h3(
   h3_09     STRING,
   total_sum DECIMAL(15,2),
   lat       DOUBLE,
@@ -12,7 +12,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 LOCATION 'project/hive/warehouse/q5';
 
-INSERT OVERWRITE TABLE q5_results
+INSERT OVERWRITE TABLE transactions_per_h3
 SELECT
   t.h3_09,
   t.total_sum,
@@ -33,6 +33,6 @@ SET hive.resultset.use.unique.column.names=false;
 SET hive.cli.print.header=true;
 
 SELECT *
-FROM q5_results
+FROM transactions_per_h3
 ORDER BY total_sum DESC
 LIMIT 10;
