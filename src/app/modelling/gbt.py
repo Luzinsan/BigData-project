@@ -20,6 +20,7 @@ from src.app.utils.common import (
     load_or_prepare_data,
     save_results,
     save_metrics,
+    save_model_parameters,
     prepare_features_pipeline
 )
 
