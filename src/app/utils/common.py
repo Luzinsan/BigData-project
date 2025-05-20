@@ -74,7 +74,7 @@ def init_spark_session(team: str, warehouse: str, app_name: str) -> SparkSession
     """Initialize Spark session."""
     return SparkSession.builder \
         .appName(f"{team} - {app_name}") \
-        .master("local[*]") \
+        .master("yarn") \
         .config("hive.metastore.uris", "thrift://hadoop-02.uni.innopolis.ru:9883") \
         .config("spark.sql.warehouse.dir", warehouse) \
         .config("spark.sql.shuffle.partitions", "100") \
